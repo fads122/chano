@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 320" fill="none" role="img" aria-label="CLM">
+  <path
+    fill="#2D9CDB"
+    d="M40 72C40 32.24 72.24 0 112 0h12c17.67 0 32 14.33 32 32s-14.33 32-32 32h-12c-13.25 0-24 10.75-24 24v136c0 13.25 10.75 24 24 24h12c17.67 0 32 14.33 32 32s-14.33 32-32 32h-12C72.24 320 40 287.76 40 248V72Z"
+  />
+  <circle cx="88" cy="160" r="13" fill="#2D9CDB" />
+  <path
+    fill="#F7FAFC"
+    stroke="#D9EDF8"
+    stroke-width="3"
+    d="M162 48h34v112h58v32H162V48Z"
+  />
+  <path
+    fill="#2D9CDB"
+    d="M278 48h32l46 132 46-132h32v224h-34V132l-42 118h-30L286 132v140h-34V48Z"
+  />
+</svg>
