@@ -73,19 +73,16 @@ export default function PortfolioShell() {
         {showLoader && <PortfolioLoader key="portfolio-loader" />}
       </AnimatePresence>
 
-      <motion.div
-        className={
-          showContent
-            ? "relative"
-            : "pointer-events-none fixed inset-0 overflow-hidden opacity-0"
-        }
-        initial={false}
-        animate={{ opacity: showContent ? 1 : 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        aria-hidden={!showContent}
-      >
-        <PortfolioLanding />
-      </motion.div>
+      {showContent && (
+        <motion.div
+          className="relative"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <PortfolioLanding />
+        </motion.div>
+      )}
     </>
   );
 }

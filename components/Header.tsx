@@ -30,7 +30,7 @@ export default function Header() {
             width={160}
             height={48}
             unoptimized
-            className="h-9 w-auto max-w-[140px] object-contain sm:max-w-[160px] sm:h-10"
+            className="h-9 w-auto max-w-[150px] object-contain sm:h-10 sm:max-w-[190px]"
           />
         </a>
 

@@ -15,7 +15,7 @@ function SocialLink({ href, label, children }: SocialIconProps) {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="text-[#888] transition-colors hover:text-[#2d9cdb]"
+      className="text-[#666] transition-colors hover:text-[#2d9cdb]"
     >
       {children}
     </a>
@@ -52,14 +52,16 @@ function SidebarBlock({
 }) {
   return (
     <div className="w-full text-left">
-      <div className="mb-3 h-px w-12 bg-white/30" />
-      <h3 className="mb-3 text-xs font-semibold tracking-[0.2em] text-white">
+      <div className="mb-2.5 h-px w-8 bg-white/15" />
+      <h3 className="mb-2.5 text-[11px] font-semibold tracking-[0.18em] text-white/75">
         {title}
       </h3>
-      <p className="mb-4 text-sm leading-relaxed text-[#888]">{text}</p>
+      <p className="mb-3 line-clamp-3 text-[13px] leading-relaxed text-[#666]">
+        {text}
+      </p>
       <a
         href={linkHref}
-        className="group inline-flex items-center gap-2 text-xs font-semibold tracking-[0.15em] text-[#888] transition-colors hover:text-[#2d9cdb]"
+        className="group inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.12em] text-[#666] transition-colors hover:text-[#2d9cdb]"
       >
         {linkLabel}
         <span className="transition-transform group-hover:translate-x-1">→</span>
@@ -70,7 +72,7 @@ function SidebarBlock({
 
 export function HeroSidebar() {
   return (
-    <div className="flex w-full flex-col items-start gap-10 text-left">
+    <div className="flex w-full flex-col items-start gap-8 text-left lg:gap-7">
       <SidebarBlock
         title="ABOUT ME"
         text={profile.aboutPreview}
@@ -84,8 +86,8 @@ export function HeroSidebar() {
         linkLabel="BROWSE PORTFOLIO"
       />
       <div className="w-full text-left">
-        <div className="mb-3 h-px w-12 bg-white/30" />
-        <h3 className="mb-4 text-xs font-semibold tracking-[0.2em] text-white">
+        <div className="mb-2.5 h-px w-8 bg-white/15" />
+        <h3 className="mb-3 text-[11px] font-semibold tracking-[0.18em] text-white/75">
           FOLLOW ME
         </h3>
         <SocialIcons />

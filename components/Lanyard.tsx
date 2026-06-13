@@ -2,7 +2,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, extend, useFrame } from "@react-three/fiber";
+import { Canvas, extend, useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, useTexture, Environment, Lightformer } from "@react-three/drei";
 import {
   BallCollider,
@@ -14,13 +14,13 @@ import {
   type RigidBodyProps,
 } from "@react-three/rapier";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
+import { createLanyardTexture } from "@/lib/createLanyardTexture";
 import * as THREE from "three";
 
 // meshline exports custom Three.js classes consumed via R3F extend()
 extend({ MeshLineGeometry, MeshLineMaterial } as Parameters<typeof extend>[0]);
 
 const CARD_GLB = "/lanyard/card.glb";
-const LANYARD_TEXTURE = "/lanyard/lanyard.png";
 
 const BLANK_PIXEL =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
@@ -42,6 +42,7 @@ interface LanyardProps {
   imageFit?: "cover" | "contain";
   backImageFit?: "cover" | "contain";
   lanyardImage?: string | null;
+  lanyardLogo?: string | null;
   lanyardWidth?: number;
   /** World-space anchor for the top of the strap (higher = strap extends above viewport). */
   anchorPosition?: [number, number, number];
@@ -49,6 +50,35 @@ interface LanyardProps {
   cardScale?: number;
   /** Vertical point the camera looks at — tune so the card face sits centered. */
   lookAtY?: number;
+  /** Horizontal look-at offset — tune to center the card in the viewport. */
+  lookAtX?: number;
+}
+
+function CameraRig({
+  position,
+  fov,
+  lookAtY,
+  lookAtX = 0,
+}: {
+  position: [number, number, number];
+  fov: number;
+  lookAtY: number;
+  lookAtX?: number;
+}) {
+  const camera = useThree((state) => state.camera);
+
+  useEffect(() => {
+    camera.position.set(position[0], position[1], position[2]);
+
+    if ("fov" in camera) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    }
+
+    camera.lookAt(lookAtX, lookAtY, 0);
+  }, [camera, fov, lookAtX, lookAtY, position]);
+
+  return null;
 }
 
 export default function Lanyard({
@@ -62,17 +92,19 @@ export default function Lanyard({
   imageFit = "cover",
   backImageFit,
   lanyardImage = null,
+  lanyardLogo = null,
   lanyardWidth = 1,
   anchorPosition = [0, 4, 0],
   cardScale = 2.25,
   lookAtY = 0,
+  lookAtX = 0,
 }: LanyardProps) {
   const [isMobile, setIsMobile] = useState(
-    () => typeof window !== "undefined" && window.innerWidth < 768,
+    () => typeof window !== "undefined" && window.innerWidth < 1024,
   );
 
   useEffect(() => {
-    const handleResize = (): void => setIsMobile(window.innerWidth < 768);
+    const handleResize = (): void => setIsMobile(window.innerWidth < 1024);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -87,11 +119,16 @@ export default function Lanyard({
         dpr={[1, isMobile ? 1.5 : 2]}
         gl={{ alpha: transparent, antialias: true }}
         style={{ background: "transparent", overflow: "visible" }}
-        onCreated={({ gl, camera }) => {
+        onCreated={({ gl }) => {
           gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1);
-          camera.lookAt(0, lookAtY, 0);
         }}
       >
+        <CameraRig
+          position={position}
+          fov={fov}
+          lookAtY={lookAtY}
+          lookAtX={lookAtX}
+        />
         <ambientLight intensity={Math.PI} />
         <Suspense fallback={null}>
           <Physics gravity={gravity} timeStep={isMobile ? 1 / 30 : 1 / 60}>
@@ -102,6 +139,7 @@ export default function Lanyard({
               imageFit={imageFit}
               backImageFit={backImageFit}
               lanyardImage={lanyardImage}
+              lanyardLogo={lanyardLogo}
               lanyardWidth={lanyardWidth}
               anchorPosition={anchorPosition}
               cardScale={cardScale}
@@ -152,6 +190,7 @@ interface BandProps {
   imageFit?: "cover" | "contain";
   backImageFit?: "cover" | "contain";
   lanyardImage?: string | null;
+  lanyardLogo?: string | null;
   lanyardWidth?: number;
   anchorPosition?: [number, number, number];
   cardScale?: number;
@@ -166,11 +205,12 @@ function Band({
   imageFit = "cover",
   backImageFit,
   lanyardImage = null,
+  lanyardLogo = null,
   lanyardWidth = 1,
   anchorPosition = [0, 4, 0],
   cardScale = 2.25,
 }: BandProps) {
-  const meshScale = isMobile ? cardScale * 0.92 : cardScale;
+  const meshScale = cardScale;
   const scaleRatio = meshScale / BASE_CARD_SCALE;
   const hookAnchorY = BASE_HOOK_Y * scaleRatio;
   const visualYOffset = BASE_VISUAL_Y * scaleRatio;
@@ -204,9 +244,30 @@ function Band({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { nodes, materials } = useGLTF(CARD_GLB) as any;
 
-  const texture = useTexture(lanyardImage || LANYARD_TEXTURE);
+  const fileTexture = useTexture(lanyardImage || BLANK_PIXEL);
+  const logoTex = useTexture(lanyardLogo || BLANK_PIXEL);
   const frontTex = useTexture(frontImage || BLANK_PIXEL);
   const backTex = useTexture(backImage || BLANK_PIXEL);
+
+  const texture = useMemo(() => {
+    if (lanyardImage) return fileTexture;
+
+    if (lanyardLogo && logoTex.image) {
+      return createLanyardTexture(
+        logoTex.image as CanvasImageSource & { width: number; height: number },
+      );
+    }
+
+    return fileTexture;
+  }, [fileTexture, lanyardImage, lanyardLogo, logoTex.image]);
+
+  useEffect(() => {
+    return () => {
+      if (!lanyardImage && lanyardLogo && texture !== fileTexture) {
+        texture.dispose();
+      }
+    };
+  }, [fileTexture, lanyardImage, lanyardLogo, texture]);
 
   const cardMap = useMemo(() => {
     const baseMap = materials.base.map;
@@ -434,12 +495,12 @@ function Band({
       <mesh ref={band}>
         <meshLineGeometry />
         <meshLineMaterial
-          color="white"
+          color="#f5f8fa"
           depthTest={false}
           resolution={isMobile ? [1000, 2000] : [1000, 1000]}
           useMap
           map={texture}
-          repeat={[-4, 1]}
+          repeat={isMobile ? [-6, 1] : [-9, 1]}
           lineWidth={lanyardWidth * scaleRatio}
         />
       </mesh>
@@ -448,6 +509,5 @@ function Band({
 }
 
 useGLTF.preload(CARD_GLB);
-useTexture.preload(LANYARD_TEXTURE);
 useTexture.preload("/profile/photo.jpg");
 useTexture.preload("/profile/logo.png");

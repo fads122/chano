@@ -28,17 +28,19 @@ const DESKTOP_LANYARD = {
   fov: 17,
   anchorPosition: [0, 7, 0] as [number, number, number],
   lookAtY: 0.35,
+  lookAtX: 0,
   cardScale: 3.35,
   lanyardWidth: 0.9,
 };
 
 const MOBILE_LANYARD = {
-  position: [0, -0.75, 26] as [number, number, number],
-  fov: 24,
-  anchorPosition: [0, 4, 0] as [number, number, number],
-  lookAtY: -1.25,
-  cardScale: 1.85,
-  lanyardWidth: 0.7,
+  position: [0.22, -0.28, 13.5] as [number, number, number],
+  fov: 18,
+  anchorPosition: [0, 5.85, 0] as [number, number, number],
+  lookAtY: 0.05,
+  lookAtX: -0.06,
+  cardScale: 3,
+  lanyardWidth: 0.72,
 };
 
 function useHeroLayout() {
@@ -74,8 +76,10 @@ function LanyardScene({
       imageFit="cover"
       backImageFit="contain"
       lanyardWidth={settings.lanyardWidth}
+      lanyardLogo={profile.logo}
       anchorPosition={settings.anchorPosition}
       lookAtY={settings.lookAtY}
+      lookAtX={settings.lookAtX}
       cardScale={settings.cardScale}
       className={className}
     />
@@ -119,7 +123,7 @@ export default function PortfolioLanding() {
         )}
 
         <div className="pointer-events-none relative z-10 mx-auto max-w-[1320px] px-5 lg:px-8">
-          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12 lg:items-center lg:gap-4 xl:gap-6">
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12 lg:items-center lg:gap-4 xl:gap-6">
             {/* Left — intro copy */}
             <motion.div
               className="relative bg-[#141414]/75 backdrop-blur-sm lg:bg-transparent lg:backdrop-blur-none lg:col-span-3 lg:py-4"
@@ -167,9 +171,9 @@ export default function PortfolioLanding() {
             </motion.div>
 
             {/* Lanyard area — mobile: in-flow canvas; desktop: empty spacer */}
-            <div className="lg:col-span-6">
+            <div className="flex w-full justify-center overflow-visible lg:col-span-6">
               {heroLayout === "mobile" && (
-                <div className="pointer-events-auto relative mx-auto h-[42vh] min-h-[280px] max-h-[380px] w-full max-w-sm sm:max-w-md">
+                <div className="pointer-events-auto relative mx-auto h-[min(76vw,440px)] min-h-[370px] w-full max-w-[420px] overflow-visible pt-1">
                   <LanyardScene
                     variant="mobile"
                     className="h-full min-h-0 overflow-visible"
@@ -181,7 +185,7 @@ export default function PortfolioLanding() {
               )}
               {heroLayout === null && (
                 <div
-                  className="mx-auto h-[42vh] min-h-[280px] max-h-[380px] w-full max-w-sm animate-pulse rounded-2xl bg-white/[0.03] sm:max-w-md"
+                  className="h-[min(72vw,420px)] min-h-[340px] w-full animate-pulse rounded-2xl bg-white/[0.03] sm:min-h-[380px]"
                   aria-hidden
                 />
               )}
@@ -189,7 +193,7 @@ export default function PortfolioLanding() {
 
             {/* Right — sidebar blocks */}
             <motion.div
-              className="relative w-full self-start max-lg:mt-6 lg:col-span-3 lg:mt-0 lg:py-4"
+              className="relative w-full self-start max-lg:mt-2 lg:col-span-3 lg:mt-16 lg:pb-6 lg:pt-4 xl:mt-20"
               variants={heroStagger}
               initial="hidden"
               animate="visible"
