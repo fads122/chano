@@ -70,6 +70,31 @@ function SidebarBlock({
   );
 }
 
+const quickLinks = [
+  { href: "#about", label: "About" },
+  { href: "#projects", label: "Work" },
+  { href: "#contact", label: "Contact" },
+] as const;
+
+export function MobileHeroQuickLinks() {
+  return (
+    <div className="flex w-full flex-col items-center gap-4">
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        {quickLinks.map((link) => (
+          <a
+            key={link.href}
+            href={link.href}
+            className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-medium tracking-wide text-[#bbb] transition-colors hover:border-[#2d9cdb]/40 hover:text-[#2d9cdb]"
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+      <SocialIcons />
+    </div>
+  );
+}
+
 export function HeroSidebar() {
   return (
     <div className="flex w-full flex-col items-start gap-8 text-left lg:gap-7">

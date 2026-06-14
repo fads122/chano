@@ -15,6 +15,7 @@ import {
 } from "@react-three/rapier";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import { createLanyardTexture } from "@/lib/createLanyardTexture";
+import { paintIdCardFront, type IdCardDetails } from "@/lib/createIdCardTexture";
 import * as THREE from "three";
 
 // meshline exports custom Three.js classes consumed via R3F extend()
@@ -52,6 +53,8 @@ interface LanyardProps {
   lookAtY?: number;
   /** Horizontal look-at offset — tune to center the card in the viewport. */
   lookAtX?: number;
+  /** Text/details for the front ID badge layout. */
+  idCard?: IdCardDetails;
 }
 
 function CameraRig({
@@ -98,6 +101,7 @@ export default function Lanyard({
   cardScale = 2.25,
   lookAtY = 0,
   lookAtX = 0,
+  idCard,
 }: LanyardProps) {
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.innerWidth < 1024,
@@ -111,14 +115,14 @@ export default function Lanyard({
 
   return (
     <div
-      className={`relative z-0 flex h-full min-h-[280px] w-full items-center justify-center overflow-visible lg:min-h-[520px] ${className}`}
+      className={`relative z-0 flex h-full min-h-[200px] w-full items-center justify-center overflow-visible lg:min-h-[520px] ${className}`}
     >
       <Canvas
-        className="h-full w-full touch-none overflow-visible"
+        className="relative z-0 h-full w-full touch-none overflow-visible"
         camera={{ position, fov }}
         dpr={[1, isMobile ? 1.5 : 2]}
         gl={{ alpha: transparent, antialias: true }}
-        style={{ background: "transparent", overflow: "visible" }}
+        style={{ background: "transparent", overflow: "visible", position: "relative", zIndex: 0 }}
         onCreated={({ gl }) => {
           gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1);
         }}
@@ -143,6 +147,7 @@ export default function Lanyard({
               lanyardWidth={lanyardWidth}
               anchorPosition={anchorPosition}
               cardScale={cardScale}
+              idCard={idCard}
             />
           </Physics>
           <Environment blur={0.75}>
@@ -194,6 +199,7 @@ interface BandProps {
   lanyardWidth?: number;
   anchorPosition?: [number, number, number];
   cardScale?: number;
+  idCard?: IdCardDetails;
 }
 
 function Band({
@@ -209,6 +215,7 @@ function Band({
   lanyardWidth = 1,
   anchorPosition = [0, 4, 0],
   cardScale = 2.25,
+  idCard,
 }: BandProps) {
   const meshScale = cardScale;
   const scaleRatio = meshScale / BASE_CARD_SCALE;
@@ -310,15 +317,42 @@ function Band({
       ctx.restore();
     };
 
-    if (frontImage && frontTex.image)
-      drawFitted(
-        frontTex.image as CanvasImageSource & {
-          width: number;
-          height: number;
-        },
-        FRONT_UV_RECT,
-        imageFit,
-      );
+    if (frontImage && frontTex.image) {
+      const rx = FRONT_UV_RECT.x * W;
+      const ry = FRONT_UV_RECT.y * H;
+      const rw = FRONT_UV_RECT.w * W;
+      const rh = FRONT_UV_RECT.h * H;
+
+      if (idCard) {
+        paintIdCardFront(
+          ctx,
+          rx,
+          ry,
+          rw,
+          rh,
+          frontTex.image as CanvasImageSource & {
+            width: number;
+            height: number;
+          },
+          lanyardLogo && logoTex.image
+            ? (logoTex.image as CanvasImageSource & {
+                width: number;
+                height: number;
+              })
+            : null,
+          idCard,
+        );
+      } else {
+        drawFitted(
+          frontTex.image as CanvasImageSource & {
+            width: number;
+            height: number;
+          },
+          FRONT_UV_RECT,
+          imageFit,
+        );
+      }
+    }
     if (backImage && backTex.image)
       drawFitted(
         backTex.image as CanvasImageSource & {
@@ -335,7 +369,18 @@ function Band({
     composite.anisotropy = 16;
     composite.needsUpdate = true;
     return composite;
-  }, [frontImage, backImage, imageFit, backImageFit, frontTex, backTex, materials.base.map]);
+  }, [
+    frontImage,
+    backImage,
+    imageFit,
+    backImageFit,
+    frontTex,
+    backTex,
+    idCard,
+    lanyardLogo,
+    logoTex,
+    materials.base.map,
+  ]);
 
   const [curve] = useState(
     () =>
