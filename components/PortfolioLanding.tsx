@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import PortfolioDetails from "@/components/PortfolioDetails";
+import ShinyText from "@/components/ShinyText";
 import Header from "@/components/Header";
 import PageBackground from "@/components/PageBackground";
 import { HeroSidebar, MobileHeroQuickLinks } from "@/components/HeroSidebar";
@@ -34,13 +36,13 @@ const DESKTOP_LANYARD = {
 };
 
 const MOBILE_LANYARD = {
-  position: [0, -0.05, 11.5] as [number, number, number],
-  fov: 21,
-  anchorPosition: [0, 4.6, 0] as [number, number, number],
-  lookAtY: 0.05,
+  position: [0, -0.08, 13] as [number, number, number],
+  fov: 22,
+  anchorPosition: [0, 5.05, 0] as [number, number, number],
+  lookAtY: -0.06,
   lookAtX: 0,
-  cardScale: 2.55,
-  lanyardWidth: 0.65,
+  cardScale: 2.52,
+  lanyardWidth: 0.6,
 };
 
 function useHeroLayout() {
@@ -85,6 +87,10 @@ function LanyardScene({
         title: profile.title,
         idCode: `${profile.initials}-2026`,
         location: profile.location,
+        email: profile.email,
+        github: profile.github.replace("https://", ""),
+        linkedin: "linkedin.com/in/chan-montesor",
+        skills: profile.skills.slice(0, 6),
       }}
       className={className}
     />
@@ -93,12 +99,12 @@ function LanyardScene({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <div className="mb-4 h-px w-10 bg-white/30" />
-      <p className="mb-3 text-xs font-semibold tracking-[0.2em] text-white">
+    <div className="mb-5 flex items-center gap-3">
+      <span className="h-px w-8 bg-[#2d9cdb]/50" />
+      <p className="text-[11px] font-semibold tracking-[0.22em] text-[#2d9cdb]">
         {children}
       </p>
-    </>
+    </div>
   );
 }
 
@@ -107,14 +113,14 @@ export default function PortfolioLanding() {
   const isDesktop = heroLayout === "desktop";
 
   return (
-    <div className="relative overflow-x-clip text-white">
+    <div className="relative overflow-x-visible text-white lg:overflow-x-clip">
       <PageBackground />
       <Header />
 
       {/* Hero — desktop: full-bleed lanyard behind grid; mobile: lanyard layer behind content */}
       <section
         id="home"
-        className="relative isolate overflow-visible pb-8 pt-[4.25rem] max-lg:pb-10 lg:min-h-screen lg:pb-12 lg:pt-[4.5rem]"
+        className="relative isolate overflow-visible pb-10 pt-[4.25rem] max-lg:pb-14 lg:min-h-screen lg:pb-12 lg:pt-[4.5rem]"
       >
         {isDesktop && (
           <div className="pointer-events-none absolute inset-0 z-0 overflow-visible">
@@ -128,17 +134,26 @@ export default function PortfolioLanding() {
         )}
 
         {heroLayout === "mobile" && (
-          <div className="pointer-events-none absolute inset-x-0 top-[6.75rem] bottom-6 z-0 flex justify-center overflow-visible lg:hidden">
-            <div className="pointer-events-auto relative h-full w-full max-w-[320px] overflow-visible">
+          <div className="pointer-events-none absolute inset-x-0 top-[7.4rem] bottom-6 z-0 overflow-visible lg:hidden">
+            <div className="pointer-events-auto relative h-full w-full overflow-visible">
               <div
-                className="pointer-events-none absolute inset-x-4 top-8 bottom-4 rounded-full bg-[#2d9cdb]/[0.07] blur-3xl"
+                className="pointer-events-none absolute inset-x-4 top-12 bottom-2 rounded-full bg-[#2d9cdb]/[0.06] blur-3xl"
                 aria-hidden
               />
               <LanyardScene
                 variant="mobile"
-                className="h-full min-h-0 overflow-visible"
+                className="h-full min-h-[335px] overflow-visible sm:min-h-[355px]"
               />
             </div>
+          </div>
+        )}
+
+        {heroLayout === null && (
+          <div className="pointer-events-none relative z-10 mx-auto max-w-[1320px] px-5 lg:hidden lg:px-8">
+            <div
+              className="h-[330px] w-full animate-pulse rounded-2xl bg-white/[0.03] sm:h-[350px]"
+              aria-hidden
+            />
           </div>
         )}
 
@@ -159,9 +174,26 @@ export default function PortfolioLanding() {
                 variants={heroFromLeft}
                 className="text-[1.625rem] font-bold leading-[1.25] tracking-tight sm:text-[1.875rem] md:text-4xl lg:text-[2.75rem] lg:leading-[1.15]"
               >
-                I&apos;m {profile.shortName},
-                <br />
-                a {profile.title}
+                <ShinyText
+                  text={`I'm ${profile.shortName},`}
+                  color="#ffffff"
+                  shineColor="#b8e4ff"
+                  speed={3}
+                  delay={1.2}
+                  spread={120}
+                  direction="left"
+                  className="block"
+                />
+                <ShinyText
+                  text={`a ${profile.title}`}
+                  color="#ffffff"
+                  shineColor="#b8e4ff"
+                  speed={3}
+                  delay={1.2}
+                  spread={120}
+                  direction="left"
+                  className="block"
+                />
               </motion.h1>
               <motion.p
                 variants={heroFromLeft}
@@ -192,16 +224,9 @@ export default function PortfolioLanding() {
               </motion.a>
             </motion.div>
 
-            {/* Mobile: reserve space for the absolute lanyard layer */}
             {heroLayout === "mobile" && (
               <div
-                className="relative z-0 h-[210px] w-full max-w-[320px] sm:h-[235px] lg:hidden"
-                aria-hidden
-              />
-            )}
-            {heroLayout === null && (
-              <div
-                className="h-[210px] w-full max-w-[320px] animate-pulse rounded-2xl bg-white/[0.03] sm:h-[235px] lg:hidden"
+                className="relative z-0 mt-3 h-[335px] w-full sm:mt-4 sm:h-[355px] lg:hidden"
                 aria-hidden
               />
             )}
@@ -217,7 +242,7 @@ export default function PortfolioLanding() {
               variants={heroFromLeft}
               initial="hidden"
               animate="visible"
-              className="pointer-events-auto relative z-20 w-full max-w-md max-lg:rounded-2xl max-lg:border max-lg:border-white/[0.06] max-lg:bg-[#141414]/92 max-lg:px-4 max-lg:py-5 max-lg:backdrop-blur-md lg:hidden"
+              className="pointer-events-auto relative z-20 mt-1 w-full max-w-md max-lg:rounded-2xl max-lg:border max-lg:border-white/[0.06] max-lg:bg-[#141414]/92 max-lg:px-4 max-lg:py-5 max-lg:backdrop-blur-md lg:hidden"
             >
               <MobileHeroQuickLinks />
             </motion.div>
@@ -259,221 +284,7 @@ export default function PortfolioLanding() {
             </section>
           </ScrollReveal>
 
-          <ScrollReveal delay={0.1}>
-            <section id="skills" className="mt-16 scroll-mt-24 sm:mt-20 lg:mt-24 lg:scroll-mt-28">
-              <SectionLabel>Skills</SectionLabel>
-              <h2 className="text-2xl font-bold">Tech stack</h2>
-              <motion.ul
-                className="mt-8 flex flex-wrap gap-3"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
-                variants={{
-                  hidden: {},
-                  visible: { transition: { staggerChildren: 0.06 } },
-                }}
-              >
-                {profile.skills.map((skill) => (
-                  <motion.li
-                    key={skill}
-                    variants={{
-                      hidden: { opacity: 0, y: 16, scale: 0.95 },
-                      visible: {
-                        opacity: 1,
-                        y: 0,
-                        scale: 1,
-                        transition: { duration: 0.45 },
-                      },
-                    }}
-                    className="rounded-full border border-white/10 px-4 py-2 text-sm text-[#bbb] transition-colors hover:border-[#2d9cdb]/40 hover:text-[#2d9cdb]"
-                  >
-                    {skill}
-                  </motion.li>
-                ))}
-              </motion.ul>
-            </section>
-          </ScrollReveal>
-
-          <ScrollReveal delay={0.1}>
-            <section id="projects" className="mt-16 scroll-mt-24 sm:mt-20 lg:mt-24 lg:scroll-mt-28">
-              <SectionLabel>Portfolio</SectionLabel>
-              <h2 className="text-2xl font-bold">Selected work</h2>
-              <div className="mt-10 flex flex-col gap-6">
-                {profile.projects.map((project, index) => (
-                  <ScrollReveal key={project.title} delay={index * 0.08}>
-                    <article className="group rounded-xl border border-white/8 bg-white/[0.02] p-6 transition-all duration-300 hover:border-[#2d9cdb]/30 hover:bg-white/[0.04]">
-                      <h3 className="text-xl font-semibold transition-colors group-hover:text-[#2d9cdb]">
-                        {project.title}
-                      </h3>
-                      <p className="mt-3 text-sm leading-7 text-[#888]">
-                        {project.description}
-                      </p>
-                      <ul className="mt-4 flex flex-wrap gap-2">
-                        {project.tags.map((tag) => (
-                          <li
-                            key={tag}
-                            className="rounded bg-[#2d9cdb]/10 px-2.5 py-1 text-xs font-medium text-[#2d9cdb]"
-                          >
-                            {tag}
-                          </li>
-                        ))}
-                      </ul>
-                      <div className="mt-5 flex flex-wrap items-center gap-3">
-                        <a
-                          href={project.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center rounded-full border border-white/15 px-4 py-2 text-xs font-semibold tracking-wide text-[#bbb] transition hover:border-[#2d9cdb]/50 hover:text-[#2d9cdb]"
-                        >
-                          GitHub
-                        </a>
-                        {project.live && (
-                          <a
-                            href={project.live}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center rounded-full bg-[#2d9cdb] px-4 py-2 text-xs font-semibold tracking-wide text-[#111] transition hover:bg-[#248bbf]"
-                          >
-                            Live demo
-                          </a>
-                        )}
-                        <a
-                          href={project.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="truncate text-xs text-[#555] transition-colors hover:text-[#2d9cdb]"
-                        >
-                          {project.github.replace("https://", "")}
-                        </a>
-                      </div>
-                    </article>
-                  </ScrollReveal>
-                ))}
-              </div>
-            </section>
-          </ScrollReveal>
-
-          <ScrollReveal delay={0.1}>
-            <section id="experience" className="mt-16 scroll-mt-24 sm:mt-20 lg:mt-24 lg:scroll-mt-28">
-              <SectionLabel>Experience</SectionLabel>
-              <h2 className="text-2xl font-bold">Where I&apos;ve worked</h2>
-              <div className="mt-10 space-y-10">
-                {profile.experience.map((item, index) => (
-                  <ScrollReveal key={`${item.company}-${item.period}`} delay={index * 0.1}>
-                    <div className="border-l-2 border-[#2d9cdb]/50 pl-6">
-                      <p className="text-sm font-medium text-[#2d9cdb]">
-                        {item.period}
-                      </p>
-                      <h3 className="mt-1 text-lg font-semibold">{item.role}</h3>
-                      <p className="text-sm text-[#666]">{item.company}</p>
-                      <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-7 text-[#888]">
-                        {item.highlights.map((highlight) => (
-                          <li key={highlight}>{highlight}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </ScrollReveal>
-                ))}
-              </div>
-            </section>
-          </ScrollReveal>
-
-          <ScrollReveal delay={0.1}>
-            <section id="education" className="mt-16 scroll-mt-24 sm:mt-20 lg:mt-24 lg:scroll-mt-28">
-              <SectionLabel>Education</SectionLabel>
-              <h2 className="text-2xl font-bold">Background</h2>
-              <div className="mt-10 space-y-10">
-                {profile.education.map((item, index) => (
-                  <ScrollReveal
-                    key={`${item.school}-${item.period}`}
-                    delay={index * 0.1}
-                  >
-                    <div className="border-l-2 border-[#2d9cdb]/50 pl-6">
-                      <p className="text-sm font-medium text-[#2d9cdb]">
-                        {item.period}
-                      </p>
-                      <h3 className="mt-1 text-lg font-semibold">
-                        {item.degree}
-                      </h3>
-                      <p className="text-sm text-[#666]">{item.school}</p>
-                      {item.details.length > 0 && (
-                        <ul className="mt-3 list-disc space-y-1 pl-5 text-sm leading-7 text-[#888]">
-                          {item.details.map((detail) => (
-                            <li key={detail}>{detail}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </ScrollReveal>
-                ))}
-              </div>
-            </section>
-          </ScrollReveal>
-
-          <ScrollReveal delay={0.1}>
-            <section id="contact" className="mt-16 scroll-mt-24 pb-8 sm:mt-20 lg:mt-24 lg:scroll-mt-28">
-              <SectionLabel>Contact</SectionLabel>
-              <h2 className="text-2xl font-bold">Let&apos;s connect</h2>
-              <p className="mt-4 text-[#888]">
-                Open to collaborations, freelance work, and full-time
-                opportunities. Based in {profile.location}.
-              </p>
-              <div className="mt-3 flex flex-col gap-1 text-sm text-[#666]">
-                <a
-                  href={`mailto:${profile.email}`}
-                  className="w-fit transition-colors hover:text-[#2d9cdb]"
-                >
-                  {profile.email}
-                </a>
-                <a
-                  href={`tel:${profile.phone.replace(/[^\d+]/g, "")}`}
-                  className="w-fit transition-colors hover:text-[#2d9cdb]"
-                >
-                  {profile.phone}
-                </a>
-                <a
-                  href={profile.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-fit transition-colors hover:text-[#2d9cdb]"
-                >
-                  linkedin.com/in/chan-montesor
-                </a>
-                <a
-                  href={profile.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-fit transition-colors hover:text-[#2d9cdb]"
-                >
-                  github.com/fads122
-                </a>
-              </div>
-              <div className="mt-8 flex flex-wrap gap-4">
-                <a
-                  href={`mailto:${profile.email}`}
-                  className="inline-flex items-center rounded-full bg-[#2d9cdb] px-6 py-3 text-sm font-semibold text-[#111] transition hover:bg-[#248bbf]"
-                >
-                  Email me
-                </a>
-                <a
-                  href={profile.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-[#bbb] transition hover:border-[#2d9cdb]/50 hover:text-[#2d9cdb]"
-                >
-                  GitHub
-                </a>
-                <a
-                  href={profile.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-[#bbb] transition hover:border-[#2d9cdb]/50 hover:text-[#2d9cdb]"
-                >
-                  LinkedIn
-                </a>
-              </div>
-            </section>
-          </ScrollReveal>
+          <PortfolioDetails />
         </div>
       </div>
     </div>

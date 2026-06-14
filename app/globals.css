@@ -18,11 +18,23 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (max-width: 1023px) {
+  html {
+    overflow-x: auto;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
-  overflow-x: clip;
+  overflow-x: hidden;
+}
+
+@media (max-width: 1023px) {
+  body {
+    overflow-x: auto;
+  }
 }
 
 ::selection {

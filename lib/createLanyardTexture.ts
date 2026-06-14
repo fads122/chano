@@ -9,17 +9,24 @@ type LogoImage = CanvasImageSource & { width: number; height: number };
 
 function drawStrapBase(ctx: CanvasRenderingContext2D, width: number, height: number) {
   const baseGradient = ctx.createLinearGradient(0, 0, 0, height);
-  baseGradient.addColorStop(0, "#101010");
+  baseGradient.addColorStop(0, "#141414");
   baseGradient.addColorStop(0.35, "#1c1c1c");
   baseGradient.addColorStop(0.65, "#1c1c1c");
-  baseGradient.addColorStop(1, "#101010");
+  baseGradient.addColorStop(1, "#141414");
   ctx.fillStyle = baseGradient;
   ctx.fillRect(0, 0, width, height);
 
+  const weave = ctx.createLinearGradient(0, 0, width, 0);
+  weave.addColorStop(0, "rgba(255, 255, 255, 0.02)");
+  weave.addColorStop(0.5, "rgba(255, 255, 255, 0.05)");
+  weave.addColorStop(1, "rgba(255, 255, 255, 0.02)");
+  ctx.fillStyle = weave;
+  ctx.fillRect(0, height * 0.28, width, height * 0.44);
+
   const edgeGradient = ctx.createLinearGradient(0, 0, width, 0);
-  edgeGradient.addColorStop(0, "rgba(45, 156, 219, 0.18)");
-  edgeGradient.addColorStop(0.5, "rgba(26, 188, 156, 0.18)");
-  edgeGradient.addColorStop(1, "rgba(45, 156, 219, 0.18)");
+  edgeGradient.addColorStop(0, "rgba(45, 156, 219, 0.2)");
+  edgeGradient.addColorStop(0.5, "rgba(45, 156, 219, 0.35)");
+  edgeGradient.addColorStop(1, "rgba(45, 156, 219, 0.2)");
   ctx.fillStyle = edgeGradient;
   ctx.fillRect(0, 0, width, 2);
   ctx.fillRect(0, height - 2, width, 2);

@@ -15,7 +15,7 @@ import {
 } from "@react-three/rapier";
 import { MeshLineGeometry, MeshLineMaterial } from "meshline";
 import { createLanyardTexture } from "@/lib/createLanyardTexture";
-import { paintIdCardFront, type IdCardDetails } from "@/lib/createIdCardTexture";
+import { paintIdCardFront, paintIdCardBack, type IdCardDetails } from "@/lib/createIdCardTexture";
 import * as THREE from "three";
 
 // meshline exports custom Three.js classes consumed via R3F extend()
@@ -27,8 +27,9 @@ const BLANK_PIXEL =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
 
 const BASE_CARD_SCALE = 2.25;
-const BASE_HOOK_Y = 1.45;
-const BASE_VISUAL_Y = -1.2;
+const BASE_VISUAL_Y = -1.08;
+/** Clip hook offset from the visual mesh group origin (model space). */
+const CLIP_HOOK_MESH_Y = 1.18;
 const BACK_UV_RECT = { x: 0.5, y: 0, w: 0.5, h: 0.757 };
 const FRONT_UV_RECT = { x: 0, y: 0, w: 0.5, h: 0.755 };
 
@@ -219,8 +220,8 @@ function Band({
 }: BandProps) {
   const meshScale = cardScale;
   const scaleRatio = meshScale / BASE_CARD_SCALE;
-  const hookAnchorY = BASE_HOOK_Y * scaleRatio;
   const visualYOffset = BASE_VISUAL_Y * scaleRatio;
+  const hookAnchorY = visualYOffset + CLIP_HOOK_MESH_Y * meshScale;
   const ropeLength = scaleRatio;
 
   const band = useRef<THREE.Mesh | null>(null);
@@ -239,6 +240,8 @@ function Band({
   const ang = new THREE.Vector3();
   const rot = new THREE.Vector3();
   const dir = new THREE.Vector3();
+  const strapAttach = new THREE.Vector3();
+  const strapQuat = new THREE.Quaternion();
 
   const segmentProps = {
     type: "dynamic" as RigidBodyProps["type"],
@@ -353,15 +356,38 @@ function Band({
         );
       }
     }
-    if (backImage && backTex.image)
-      drawFitted(
-        backTex.image as CanvasImageSource & {
-          width: number;
-          height: number;
-        },
-        BACK_UV_RECT,
-        backImageFit ?? imageFit,
-      );
+    if (backImage && backTex.image) {
+      const rx = BACK_UV_RECT.x * W;
+      const ry = BACK_UV_RECT.y * H;
+      const rw = BACK_UV_RECT.w * W;
+      const rh = BACK_UV_RECT.h * H;
+
+      if (idCard) {
+        paintIdCardBack(
+          ctx,
+          rx,
+          ry,
+          rw,
+          rh,
+          lanyardLogo && logoTex.image
+            ? (logoTex.image as CanvasImageSource & {
+                width: number;
+                height: number;
+              })
+            : null,
+          idCard,
+        );
+      } else {
+        drawFitted(
+          backTex.image as CanvasImageSource & {
+            width: number;
+            height: number;
+          },
+          BACK_UV_RECT,
+          backImageFit ?? imageFit,
+        );
+      }
+    }
 
     const composite = new THREE.CanvasTexture(canvas);
     composite.colorSpace = THREE.SRGBColorSpace;
@@ -438,7 +464,6 @@ function Band({
           delta * (minSpeed + clampedDistance * (maxSpeed - minSpeed)),
         );
       });
-      curve.points[0].copy(j3.current.translation());
       curve.points[1].copy(
         (j2.current as typeof j2.current & { lerped: THREE.Vector3 }).lerped,
       );
@@ -446,6 +471,15 @@ function Band({
         (j1.current as typeof j1.current & { lerped: THREE.Vector3 }).lerped,
       );
       curve.points[3].copy(fixed.current.translation());
+
+      const cardT = card.current.translation();
+      const cardR = card.current.rotation();
+      strapAttach.set(0, hookAnchorY, 0);
+      strapQuat.set(cardR.x, cardR.y, cardR.z, cardR.w);
+      strapAttach.applyQuaternion(strapQuat);
+      strapAttach.add(cardT);
+      curve.points[0].copy(strapAttach);
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (band.current?.geometry as any)?.setPoints(
         curve.getPoints(isMobile ? 16 : 32),
@@ -540,7 +574,7 @@ function Band({
       <mesh ref={band}>
         <meshLineGeometry />
         <meshLineMaterial
-          color="#f5f8fa"
+          color="#f0f0f0"
           depthTest={false}
           resolution={isMobile ? [1000, 2000] : [1000, 1000]}
           useMap
